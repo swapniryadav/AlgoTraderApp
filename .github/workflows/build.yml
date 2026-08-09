@@ -24,7 +24,7 @@ jobs:
         pip install --upgrade pip
         pip install --upgrade "cython<3.0.0" buildozer python-for-android
 
-    - name: Create buildozer.spec
+    - name: Buildzer Init
       run: |
         yes | buildozer init
         sed -i 's/requirements = python3,kivy/requirements = python3,kivy,requests,pyotp,urllib3,certifi,idna,chardet,setuptools/g' buildozer.spec
