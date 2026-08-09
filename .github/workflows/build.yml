@@ -10,32 +10,32 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - name: Checkout repository
+      uses: actions/checkout@v4
 
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: '3.10'
 
-    - name: Install System Dependencies
+    - name: Install Dependencies
       run: |
         sudo apt-get update
         sudo apt-get install -y build-essential libsqlite3-dev libbz2-dev libssl-dev libgdbm-dev libncurses5-dev libncursesw5-dev libreadline-dev python3-dev libffi-dev liblzma-dev zip unzip openjdk-17-jdk
         pip install --upgrade pip
         pip install --upgrade "cython<3.0.0" buildozer python-for-android
 
-    - name: Buildzer Init
+    - name: Configure buildozer.spec
       run: |
         yes | buildozer init
         sed -i 's/requirements = python3,kivy/requirements = python3,kivy,requests,pyotp,urllib3,certifi,idna,chardet,setuptools/g' buildozer.spec
-        sed -i 's/android.api = 31/android.api = 33/g' buildozer.spec
 
-    - name: Build with Buildozer
+    - name: Build APK
       run: |
         yes | buildozer -v android debug
 
-    - name: Upload APK Artifact
-      uses: actions/upload-artifact@v3
+    - name: Upload APK
+      uses: actions/upload-artifact@v4
       with:
         name: AlgoTrader-APK
         path: bin/*.apk
