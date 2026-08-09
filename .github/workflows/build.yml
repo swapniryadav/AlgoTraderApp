@@ -25,18 +25,41 @@ jobs:
         pip install --upgrade pip setuptools
         pip install "cython<3.0.0" buildozer python-for-android
 
-    - name: Generate buildozer.spec
+    - name: Download NDK r25b
       run: |
-        buildozer init
-        sed -i 's/requirements = python3,kivy/requirements = python3,kivy,requests,pyotp,urllib3,certifi,idna,chardet/g' buildozer.spec
-        sed -i 's/android.api = 31/android.api = 33/g' buildozer.spec
-        sed -i 's/# android.accept_sdk_license = False/android.accept_sdk_license = True/g' buildozer.spec
-        sed -i 's/# android.archs = arm64-v8a/android.archs = arm64-v8a/g' buildozer.spec
+        wget -q https://dl.google.com/android/repository/android-ndk-r25b-linux.zip
+        unzip -q android-ndk-r25b-linux.zip -d $HOME
+        rm android-ndk-r25b-linux.zip
+
+    - name: Write buildozer.spec
+      run: |
+        cat << 'EOF' > buildozer.spec
+        [app]
+        title = AlgoTrader
+        package.name = algotrader
+        package.domain = org.test
+        source.dir = .
+        source.include_exts = py,png,jpg,kv,atlas
+        version = 0.1
+        requirements = python3,kivy,requests,pyotp,urllib3,certifi,idna,chardet,setuptools,openssl
+        orientation = portrait
+        fullscreen = 0
+        android.permissions = INTERNET, ACCESS_NETWORK_STATE
+        android.api = 33
+        android.minapi = 21
+        android.ndk = 25b
+        android.ndk_path = /home/runner/android-ndk-r25b
+        android.accept_sdk_license = True
+        android.archs = arm64-v8a
+
+        [buildozer]
+        log_level = 2
+        warn_on_root = 1
+        EOF
 
     - name: Build APK with Buildozer
       env:
         BUILDOZER_WARN_ON_ROOT: 0
-        PIP_NO_CACHE_DIR: 1
       run: |
         yes | buildozer -v android debug
 
