@@ -1,0 +1,39 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential libsqlite3-dev libbz2-dev libssl-dev libgdbm-dev libncurses5-dev libncursesw5-dev libreadline-dev python3-dev libffi-dev liblzma-dev zip unzip openjdk-17-jdk
+        pip install --upgrade buildozer "cython<3.0.0"
+
+    - name: Buildzer Init
+      run: |
+        yes | buildozer init
+        sed -i 's/requirements = python3,kivy/requirements = python3,kivy,requests,pyotp,urllib3,certifi,idna,chardet,setuptools/g' buildozer.spec
+
+    - name: Build with Buildozer
+      run: |
+        yes | buildozer -v android debug
+
+    - name: Upload APK
+      uses: actions/upload-artifact@v3
+      with:
+        name: AlgoTrader-APK
+        path: bin/*.apk
